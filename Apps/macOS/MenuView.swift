@@ -4,6 +4,7 @@ import SwiftUI
 struct MenuView: View {
     let model: AppModel
     @State private var tokenInput = ""
+    @State private var hint: String?
     @AppStorage(AppModel.popupKey) private var popupEnabled = true
 
     var body: some View {
@@ -29,7 +30,9 @@ struct MenuView: View {
             Divider()
             Toggle("Pop-up window until dismissed", isOn: $popupEnabled)
                 .font(.caption)
-            if let checked = model.lastChecked {
+            if let hint {
+                Text(hint).font(.caption).fontWeight(.medium)
+            } else if let checked = model.lastChecked {
                 Text("Checked \(checked, style: .relative) ago")
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -39,6 +42,7 @@ struct MenuView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                     .help("Check GitHub now")
+                    .onHover { hint = $0 ? "Check GitHub now" : nil }
                 }
                 Menu {
                     Button("Send test toast", systemImage: "bell.badge") { model.sendTestToast() }
@@ -53,11 +57,13 @@ struct MenuView: View {
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .help("More")
+                .onHover { hint = $0 ? "More: test toast, sign out" : nil }
                 Spacer()
                 Button { NSApplication.shared.terminate(nil) } label: {
                     Image(systemName: "power")
                 }
                 .help("Quit ChangeNotify")
+                .onHover { hint = $0 ? "Quit ChangeNotify" : nil }
             }
             .buttonStyle(.borderless)
             .imageScale(.large)
