@@ -1,0 +1,35 @@
+name: ChangeNotify
+options:
+  bundleIdPrefix: com.jimbritt
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  ChangeNotifyCore:
+    path: ChangeNotifyCore
+targets:
+  ChangeNotify-macOS:
+    type: application
+    platform: macOS
+    sources: [Apps/macOS]
+    dependencies:
+      - package: ChangeNotifyCore
+    entitlements:
+      path: Apps/macOS/ChangeNotify.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.network.client: true
+    info:
+      path: Apps/macOS/Info.plist
+      properties:
+        CFBundleDisplayName: ChangeNotify
+        LSUIElement: true            # menu bar only, no Dock icon
+        LSApplicationCategoryType: public.app-category.developer-tools
+    settings:
+      base:
+        PRODUCT_NAME: ChangeNotify
+        PRODUCT_BUNDLE_IDENTIFIER: com.jimbritt.changenotify
+        SWIFT_VERSION: "6.0"
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        # DEVELOPMENT_TEAM: <Team ID goes here once available>
+        CODE_SIGN_STYLE: Automatic
