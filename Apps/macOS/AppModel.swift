@@ -72,6 +72,19 @@ final class AppModel {
         }
     }
 
+    /// Fires a sample toast so notification permission and click-through can be verified without GitHub.
+    func sendTestToast() {
+        notify(ChangeEvent(
+            id: "test:\(UUID().uuidString)",
+            source: "test",
+            project: "JimGBritt/claude-usage-widget",
+            title: "Test: Add usage widget (#6)",
+            url: URL(string: "https://github.com/JimGBritt/claude-usage-widget/pull/6")!,
+            reason: .mention,
+            updatedAt: .now,
+            nextStep: "Ready to merge"))
+    }
+
     private func notify(_ event: ChangeEvent) {
         let content = UNMutableNotificationContent()
         content.title = "\(event.reason.label) · \(event.project)"

@@ -32,6 +32,7 @@ struct MenuView: View {
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
+                Button("Test toast") { model.sendTestToast() }
                 if model.signedIn {
                     Button("Refresh") { Task { await model.refresh() } }
                     Button("Sign out") { model.signOut() }
