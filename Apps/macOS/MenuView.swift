@@ -4,6 +4,7 @@ import SwiftUI
 struct MenuView: View {
     let model: AppModel
     @State private var tokenInput = ""
+    @AppStorage(AppModel.popupKey) private var popupEnabled = true
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -26,6 +27,8 @@ struct MenuView: View {
                 Text(error).font(.caption).foregroundStyle(.red)
             }
             Divider()
+            Toggle("Pop-up window until dismissed", isOn: $popupEnabled)
+                .font(.caption)
             HStack {
                 if let checked = model.lastChecked {
                     Text("Checked \(checked, style: .relative) ago")

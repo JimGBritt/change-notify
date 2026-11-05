@@ -16,6 +16,7 @@ final class AppModel {
     private static let tokenAccount = "github-token"
     private static let seenKey = "seenEventIDs"
     private static let primedKey = "trackerPrimed"
+    static let popupKey = "popupEnabled"
     private let pollInterval: Duration = .seconds(120)
 
     private let tracker: EventTracker
@@ -24,6 +25,7 @@ final class AppModel {
 
     private init() {
         let defaults = UserDefaults.standard
+        defaults.register(defaults: [Self.popupKey: true])
         let seen = Set(defaults.stringArray(forKey: Self.seenKey) ?? [])
         tracker = EventTracker(seen: seen, primed: defaults.bool(forKey: Self.primedKey))
         signedIn = KeychainStore.load(account: Self.tokenAccount) != nil
@@ -91,6 +93,11 @@ final class AppModel {
         content.subtitle = event.title
         content.body = event.nextStep ?? ""
         content.sound = .default
+        // Breaks through Focus once the Time Sensitive capability is enabled; harmless until then.
+        content.interruptionLevel = .timeSensitive
+        if UserDefaults.standard.bool(forKey: Self.popupKey) {
+            AlertPanelController.shared.show(event)
+        }
         content.userInfo = ["url": event.url.absoluteString]
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: event.id, content: content, trigger: nil))
