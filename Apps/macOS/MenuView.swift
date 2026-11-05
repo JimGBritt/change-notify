@@ -29,17 +29,22 @@ struct MenuView: View {
             Divider()
             Toggle("Pop-up window until dismissed", isOn: $popupEnabled)
                 .font(.caption)
+            if let checked = model.lastChecked {
+                Text("Checked \(checked, style: .relative) ago")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             HStack {
-                if let checked = model.lastChecked {
-                    Text("Checked \(checked, style: .relative) ago")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button("Test toast") { model.sendTestToast() }
                 if model.signedIn {
                     Button("Refresh") { Task { await model.refresh() } }
-                    Button("Sign out") { model.signOut() }
                 }
+                Menu("More") {
+                    Button("Send test toast") { model.sendTestToast() }
+                    if model.signedIn {
+                        Button("Sign out") { model.signOut() }
+                    }
+                }
+                .fixedSize()
+                Spacer()
                 Button("Quit") { NSApplication.shared.terminate(nil) }
             }
         }
