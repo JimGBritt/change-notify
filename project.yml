@@ -3,14 +3,22 @@ options:
   bundleIdPrefix: com.jimbritt
   deploymentTarget:
     macOS: "14.0"
+    iOS: "17.0"
 packages:
   ChangeNotifyCore:
     path: ChangeNotifyCore
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    # DEVELOPMENT_TEAM: <Team ID goes here once available>
 targets:
   ChangeNotify-macOS:
     type: application
     platform: macOS
-    sources: [Apps/macOS]
+    sources: [Apps/macOS, Apps/Shared]
     dependencies:
       - package: ChangeNotifyCore
     entitlements:
@@ -28,8 +36,27 @@ targets:
       base:
         PRODUCT_NAME: ChangeNotify
         PRODUCT_BUNDLE_IDENTIFIER: com.jimbritt.changenotify
-        SWIFT_VERSION: "6.0"
-        MARKETING_VERSION: "0.1.0"
-        CURRENT_PROJECT_VERSION: "1"
-        # DEVELOPMENT_TEAM: <Team ID goes here once available>
-        CODE_SIGN_STYLE: Automatic
+  ChangeNotify-iOS:
+    type: application
+    platform: iOS
+    sources: [Apps/iOS, Apps/Shared]
+    dependencies:
+      - package: ChangeNotifyCore
+    info:
+      path: Apps/iOS/Info.plist
+      properties:
+        CFBundleDisplayName: ChangeNotify
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.jimbritt.changenotify.refresh]
+        LSApplicationCategoryType: public.app-category.developer-tools
+    settings:
+      base:
+        PRODUCT_NAME: ChangeNotify
+        # Same ID as macOS so both can ship as one universal-purchase listing.
+        PRODUCT_BUNDLE_IDENTIFIER: com.jimbritt.changenotify
+        TARGETED_DEVICE_FAMILY: "1"
+        GENERATE_INFOPLIST_FILE: NO

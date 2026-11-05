@@ -1,7 +1,11 @@
-import AppKit
 import ChangeNotifyCore
 import Observation
 import UserNotifications
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 @MainActor
 @Observable
@@ -95,9 +99,11 @@ final class AppModel {
         content.sound = .default
         // Breaks through Focus once the Time Sensitive capability is enabled; harmless until then.
         content.interruptionLevel = .timeSensitive
+        #if os(macOS)
         if UserDefaults.standard.bool(forKey: Self.popupKey) {
             AlertPanelController.shared.show(event)
         }
+        #endif
         content.userInfo = ["url": event.url.absoluteString]
         UNUserNotificationCenter.current().add(
             UNNotificationRequest(identifier: event.id, content: content, trigger: nil))
@@ -114,7 +120,17 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, @u
                                 didReceive response: UNNotificationResponse) async {
         if let s = response.notification.request.content.userInfo["url"] as? String,
            let url = URL(string: s) {
-            await MainActor.run { _ = NSWorkspace.shared.open(url) }
+            await MainActor.run { openExternally(url) }
         }
     }
+}
+
+/// Opens a link in the default browser on either platform.
+@MainActor
+func openExternally(_ url: URL) {
+    #if os(macOS)
+    NSWorkspace.shared.open(url)
+    #else
+    UIApplication.shared.open(url)
+    #endif
 }
