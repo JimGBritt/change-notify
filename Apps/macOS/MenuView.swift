@@ -33,20 +33,34 @@ struct MenuView: View {
                 Text("Checked \(checked, style: .relative) ago")
                     .font(.caption).foregroundStyle(.secondary)
             }
-            HStack {
+            HStack(spacing: 14) {
                 if model.signedIn {
-                    Button("Refresh") { Task { await model.refresh() } }
-                }
-                Menu("More") {
-                    Button("Send test toast") { model.sendTestToast() }
-                    if model.signedIn {
-                        Button("Sign out") { model.signOut() }
+                    Button { Task { await model.refresh() } } label: {
+                        Image(systemName: "arrow.clockwise")
                     }
+                    .help("Check GitHub now")
                 }
+                Menu {
+                    Button("Send test toast", systemImage: "bell.badge") { model.sendTestToast() }
+                    if model.signedIn {
+                        Button("Sign out", systemImage: "rectangle.portrait.and.arrow.right") {
+                            model.signOut()
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .menuIndicator(.hidden)
                 .fixedSize()
+                .help("More")
                 Spacer()
-                Button("Quit") { NSApplication.shared.terminate(nil) }
+                Button { NSApplication.shared.terminate(nil) } label: {
+                    Image(systemName: "power")
+                }
+                .help("Quit ChangeNotify")
             }
+            .buttonStyle(.borderless)
+            .imageScale(.large)
         }
         .padding(12)
         .frame(width: 360)
