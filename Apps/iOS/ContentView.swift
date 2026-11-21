@@ -68,19 +68,31 @@ struct ContentView: View {
 
     private var signIn: some View {
         Form {
+            Section("Sign in to GitHub") {
+                switch model.signInState {
+                case .idle, .failed:
+                    Button("Sign in with GitHub") { model.beginSignIn() }
+                    if case .failed(let message) = model.signInState {
+                        Text(message).font(.footnote).foregroundStyle(.red)
+                    }
+                case .waiting(let code, let url):
+                    Text("Enter this code on GitHub:").font(.footnote).foregroundStyle(.secondary)
+                    Text(code).font(.system(.largeTitle, design: .monospaced)).fontWeight(.bold)
+                        .textSelection(.enabled)
+                    Text("The code was copied to your clipboard.")
+                        .font(.footnote).foregroundStyle(.secondary)
+                    Link("Open GitHub", destination: url)
+                    Button("Cancel", role: .cancel) { model.cancelSignIn() }
+                }
+            }
             Section {
-                Text("Paste a personal access token (classic) with the “notifications” scope. "
-                     + "It is stored in your Keychain.")
-                    .font(.footnote).foregroundStyle(.secondary)
-                SecureField("ghp_…", text: $tokenInput)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled()
-                Button("Save token") { model.signIn(token: tokenInput); tokenInput = "" }
-                    .disabled(tokenInput.isEmpty)
-                Link("Create a token", destination: URL(
-                    string: "https://github.com/settings/tokens/new?scopes=notifications&description=ChangeNotify")!)
-            } header: {
-                Text("Sign in to GitHub")
+                DisclosureGroup("Use a personal access token instead") {
+                    SecureField("ghp_…", text: $tokenInput)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                    Button("Save token") { model.signIn(token: tokenInput); tokenInput = "" }
+                        .disabled(tokenInput.isEmpty)
+                }
             }
         }
     }

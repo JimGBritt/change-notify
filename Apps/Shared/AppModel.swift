@@ -16,6 +16,17 @@ final class AppModel {
     private(set) var lastChecked: Date?
     private(set) var lastError: String?
     private(set) var signedIn: Bool
+    private(set) var signInState: SignInState = .idle
+
+    enum SignInState: Equatable {
+        case idle
+        case waiting(userCode: String, url: URL)
+        case failed(String)
+    }
+
+    /// Public identifier of the "ChangeNotify" GitHub OAuth App (device flow enabled). Not a secret.
+    static let githubClientID = "Ov23ligvwP3Au4vfMySd"
+    private var signInTask: Task<Void, Never>?
 
     private static let tokenAccount = "github-token"
     private static let seenKey = "seenEventIDs"
@@ -53,6 +64,35 @@ final class AppModel {
         KeychainStore.save(trimmed, account: Self.tokenAccount)
         signedIn = true
         Task { await refresh() }
+    }
+
+    /// GitHub device flow: shows a code, opens github.com/login/device, waits for approval.
+    func beginSignIn() {
+        signInTask?.cancel()
+        signInTask = Task { [weak self] in
+            guard let self else { return }
+            let flow = GitHubDeviceFlow(clientID: Self.githubClientID)
+            do {
+                let code = try await flow.requestCode(scope: "notifications")
+                signInState = .waiting(userCode: code.userCode, url: code.verificationURI)
+                copyToClipboard(code.userCode)
+                openExternally(code.verificationURI)
+                let token = try await flow.pollForToken(code)
+                KeychainStore.save(token, account: Self.tokenAccount)
+                signedIn = true
+                signInState = .idle
+                await refresh()
+            } catch is CancellationError {
+                signInState = .idle
+            } catch {
+                signInState = .failed(error.localizedDescription)
+            }
+        }
+    }
+
+    func cancelSignIn() {
+        signInTask?.cancel()
+        signInState = .idle
     }
 
     func signOut() {
@@ -132,5 +172,15 @@ func openExternally(_ url: URL) {
     NSWorkspace.shared.open(url)
     #else
     UIApplication.shared.open(url)
+    #endif
+}
+
+@MainActor
+func copyToClipboard(_ text: String) {
+    #if os(macOS)
+    NSPasteboard.general.clearContents()
+    NSPasteboard.general.setString(text, forType: .string)
+    #else
+    UIPasteboard.general.string = text
     #endif
 }

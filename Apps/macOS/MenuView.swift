@@ -73,17 +73,37 @@ struct MenuView: View {
     }
 
     private var signIn: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Text("Sign in to GitHub").font(.headline)
-            Text("Paste a personal access token (classic) with the “notifications” scope. "
-                 + "It is stored in your Keychain.")
-                .font(.caption).foregroundStyle(.secondary)
-            SecureField("ghp_…", text: $tokenInput)
-            Button("Save token") { model.signIn(token: tokenInput); tokenInput = "" }
-                .disabled(tokenInput.isEmpty)
-            Link("Create a token", destination: URL(
-                string: "https://github.com/settings/tokens/new?scopes=notifications&description=ChangeNotify")!)
+            switch model.signInState {
+            case .idle, .failed:
+                Button("Sign in with GitHub") { model.beginSignIn() }
+                    .buttonStyle(.borderedProminent)
+                if case .failed(let message) = model.signInState {
+                    Text(message).font(.caption).foregroundStyle(.red)
+                }
+            case .waiting(let code, let url):
+                Text("Enter this code on GitHub:").font(.caption).foregroundStyle(.secondary)
+                Text(code).font(.system(.title, design: .monospaced)).fontWeight(.bold)
+                    .textSelection(.enabled)
+                Text("It was copied to your clipboard and GitHub opened in your browser.")
+                    .font(.caption).foregroundStyle(.secondary)
+                HStack {
+                    Link("Open GitHub again", destination: url)
+                    Spacer()
+                    Button("Cancel") { model.cancelSignIn() }
+                }
                 .font(.caption)
+            }
+            DisclosureGroup("Use a personal access token instead") {
+                VStack(alignment: .leading, spacing: 6) {
+                    SecureField("ghp_…", text: $tokenInput)
+                    Button("Save token") { model.signIn(token: tokenInput); tokenInput = "" }
+                        .disabled(tokenInput.isEmpty)
+                }
+                .padding(.top, 4)
+            }
+            .font(.caption)
         }
     }
 }
