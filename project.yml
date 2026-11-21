@@ -13,7 +13,8 @@ settings:
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
     CODE_SIGN_STYLE: Automatic
-    # DEVELOPMENT_TEAM: <Team ID goes here once available>
+    DEVELOPMENT_TEAM: ZANTG453Q3
+    ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
 targets:
   ChangeNotify-macOS:
     type: application
@@ -31,6 +32,7 @@ targets:
       properties:
         CFBundleDisplayName: ChangeNotify
         LSUIElement: true            # menu bar only, no Dock icon
+        ITSAppUsesNonExemptEncryption: false   # standard HTTPS only
         LSApplicationCategoryType: public.app-category.developer-tools
     settings:
       base:
@@ -51,6 +53,7 @@ targets:
           UIApplicationSupportsMultipleScenes: false
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         UIBackgroundModes: [fetch]
+        ITSAppUsesNonExemptEncryption: false   # standard HTTPS only
         BGTaskSchedulerPermittedIdentifiers: [com.jimbritt.changenotify.refresh]
         LSApplicationCategoryType: public.app-category.developer-tools
     settings:
@@ -60,3 +63,20 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.jimbritt.changenotify
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: NO
+schemes:
+  ChangeNotify-macOS:
+    build:
+      targets:
+        ChangeNotify-macOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  ChangeNotify-iOS:
+    build:
+      targets:
+        ChangeNotify-iOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release
